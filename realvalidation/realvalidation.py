@@ -58,7 +58,7 @@ class RealValidation:
         self.token = token
         self.url = url
 
-        self.log.error('<RealValidation {} >'.format(self.__dict__))
+        self.log.debug('<RealValidation {} >'.format(self.__dict__))
 
     def lookup_phone(self, phone):
         """Checks the RealValidation DNC Api for a given phone.
