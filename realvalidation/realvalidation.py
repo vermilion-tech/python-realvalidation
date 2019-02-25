@@ -12,7 +12,7 @@ class InvalidPhoneFormatException(Exception):
     pass
 
 
-class InvalidResponseException(Exception):
+class InvalidJSONResponseException(Exception):
     pass
 
 
@@ -97,7 +97,7 @@ class RealValidation:
         try:
             data = req.json()
         except ValueError as error:
-            raise InvalidResponseException
+            raise InvalidJSONResponseException
 
         # if realvalidation RESPONSECODE isn't OK raise error
         if data.get('RESPONSECODE') != 'OK':
