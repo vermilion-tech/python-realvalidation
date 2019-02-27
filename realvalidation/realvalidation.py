@@ -3,33 +3,10 @@ import logging
 import re
 import os
 
-
-class InvalidTokenException(Exception):
-    """Raised when a token couldn't be enumerated. Tokens can passed as a
-    parameter when initializing a ``RealValidation`` object or by setting the
-    ``RV_TOKEN`` environmental variable before execution.
-
-    """
-    pass
-
-
-class InvalidPhoneFormatException(Exception):
-    """Raised when a phone string doesn't match ``PHONE_REGEX``"""
-    pass
-
-
-class InvalidJSONResponseException(Exception):
-    """Raised when we couldn't decode a JSON response from a RealValidation
-    API Request
-
-    """
-    pass
-
-
-class ResponseCodeNotOkException(Exception):
-    """Raised when ``RESPONSECODE`` in a RealValidation JSON response does not
-    equal ``OK``"""
-    pass
+from .errors import (
+    InvalidTokenError, InvalidPhoneFormatError, InvalidJSONResponseError,
+    ResponseCodeNotOkError
+)
 
 
 class RealValidation:
@@ -76,7 +53,7 @@ class RealValidation:
         if re.match(self.phone_regex, phone):
             return True
 
-        raise InvalidPhoneFormatException
+        raise InvalidPhoneFormatError
 
     def __init__(self,
                  token=os.environ.get('RV_TOKEN'),
@@ -86,7 +63,7 @@ class RealValidation:
         self.log = logging.getLogger(__name__)
 
         if token is None:
-            raise InvalidTokenException
+            raise InvalidTokenError
 
         self.output = output
         self.token = token
@@ -130,10 +107,10 @@ class RealValidation:
         try:
             data = req.json()
         except ValueError:
-            raise InvalidJSONResponseException
+            raise InvalidJSONResponseError
 
         # if realvalidation RESPONSECODE isn't OK raise error
         if data.get('RESPONSECODE') != 'OK':
-            raise ResponseCodeNotOkException
+            raise ResponseCodeNotOkError
 
         return data
