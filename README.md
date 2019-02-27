@@ -2,3 +2,5 @@
 
 ### Read the docs!
 https://python-realvalidation.readthedocs.io/en/latest/
+
+`$ pip install realvalidation`
