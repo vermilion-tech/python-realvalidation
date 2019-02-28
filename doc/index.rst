@@ -12,6 +12,14 @@ Welcome to realvalidation's documentation!
 
    api
 
+Basic Usage
+===========
+``$ pip install realvalidation``
+
+``$ export RV_TOKEN=realvalidation_api_token``
+
+``realvalidation --workbook sample.xlsx``
+
 Indices and tables
 ==================
 

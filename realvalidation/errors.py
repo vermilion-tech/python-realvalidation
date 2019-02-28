@@ -4,6 +4,7 @@ class RealValidationError(Exception):
     """Base class for exceptions in this module."""
     pass
 
+
 class InvalidTokenError(RealValidationError):
     """Raised when a token couldn't be enumerated. Tokens can passed as a
     parameter when initializing a ``RealValidation`` object or by setting the
@@ -11,6 +12,7 @@ class InvalidTokenError(RealValidationError):
 
     """
     pass
+
 
 class InvalidPhoneFormatError(RealValidationError):
     """Raised when a phone string doesn't match ``PHONE_REGEX``"""

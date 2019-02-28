@@ -11,3 +11,9 @@ ChangeLog
 .DS_Store
 
 doc/_*
+
+.idea
+
+*.xlsx
+
+*.log
