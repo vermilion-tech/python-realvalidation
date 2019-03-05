@@ -38,7 +38,7 @@ pipeline {
                 )}"""
               }
               withCredentials([file(credentialsId: "${PYPIRC_CREDENTIALS}", variable: 'PYPIRC')]) {
-                  sh "twine upload --config-file $PYPIRC dist/realvalidation-${SEMVER}*"
+                  sh "twine upload --config-file $PYPIRC dist/*"
               }
               slackSend (color: '#ffde57', message: "PyPi Package Pushed - https://pypi.org/project/realvalidation/\n```\nTry it out!\n\npip install realvalidation==${SEMVER}```")
             }
