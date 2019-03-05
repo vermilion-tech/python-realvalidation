@@ -33,7 +33,7 @@ pipeline {
                     }
                 }
 
-                slackSend (color: '#0db7ed', message: "Docker Image Built & Pushed - https://hub.docker.com/r/kadenlnelson/realvalidation\n```Try it out!\n$ docker run --rm ${DOCKER_REPO}```")
+                slackSend (color: '#0db7ed', message: "Docker Image Built & Pushed - https://hub.docker.com/r/kadenlnelson/realvalidation/tags\n\n```\nTry it out:\n\ndocker run --rm -${DOCKER_REPO}```")
             }
         }
     }
