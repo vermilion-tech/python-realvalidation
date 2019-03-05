@@ -30,6 +30,7 @@ pipeline {
             agent { docker { image "python:${PYTHON_VERSION}" } }
             steps {
               sh 'pip install -r requirements.txt'
+              sh 'rm -rf dist'
               sh 'python setup.py sdist bdist_wheel'
               script {
                 SEMVER = """${sh(
@@ -38,7 +39,7 @@ pipeline {
                 )}"""
               }
               withCredentials([file(credentialsId: "${PYPIRC_CREDENTIALS}", variable: 'PYPIRC')]) {
-                  sh "twine upload --config-file $PYPIRC dist/*"
+                  sh "twine upload --disable-progress-bar --skip-existing --config-file $PYPIRC dist/*"
               }
               slackSend (color: '#ffde57', message: "PyPi Package Pushed - https://pypi.org/project/realvalidation/\n```\nTry it out!\n\npip install realvalidation==${SEMVER}```")
             }
