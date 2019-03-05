@@ -6,6 +6,10 @@ pipeline {
             returnStdout: true,
             script: "git --no-pager log --format='medium' -1 ${GIT_COMMIT}"
         )}"""
+        COMMIT_HASH = """${sh(
+            returnStdout: true,
+            script: "git describe --always"
+        )}"""
 
         DOCKER_REPO = "kadenlnelson/realvalidation"
         DOCKER_CREDENTIALS = "docker-hub-kadenlnelson"
@@ -18,32 +22,20 @@ pipeline {
             }
         }
 
-        stage('install requirements') {
-            agent { docker { image 'python:3.7.2' } }
-            steps {
-                sh 'pip install -r requirements.txt'
-
-                script {
-                    SETUP_PY_VERSION = """${sh(
-                        returnStdout: true,
-                        script: "python setup.py --version"
-                    )}"""
-                }
-            }
-        }
-
 		    stage('docker build & push') {
             agent { docker { image 'docker:18.09.2' } }
             steps {
                 script {
+                    def branchName = "${GIT_BRANCH}".replace('/', '_')
                     def image = docker.build("${DOCKER_REPO}")
 
                     docker.withRegistry('', "${DOCKER_CREDENTIALS}") {
-                        image.push("${SETUP_PY_VERSION}")
+                        image.push(branchName)
+                        image.push("${COMMIT_HASH}")
                     }
                 }
 
-                slackSend (color: '#0db7ed', message: "Docker Image Built & Pushed - https://hub.docker.com/r/kadenlnelson/realvalidation/tags\n```\nTry it out!\n\ndocker run --rm -${DOCKER_REPO}```")
+                slackSend (color: '#0db7ed', message: "Docker Image Built & Pushed - https://hub.docker.com/r/kadenlnelson/realvalidation/tags\n```\nTry it out!\n\ndocker run --rm ${DOCKER_REPO}:${SETUP_PY_VERSION}```")
             }
         }
     }
