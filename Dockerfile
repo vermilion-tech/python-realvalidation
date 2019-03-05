@@ -1,13 +1,15 @@
-FROM python:3.7.2-alpine
+FROM python:3.7.2
 
 LABEL maintainer="kaden@vermilion.tech"
 
 WORKDIR /usr/src/app
 
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY . .
 
-RUN python setup.py install
-
-ENTRYPOINT [ "realvalidation" ]
+ENTRYPOINT [ "python", "-m", "realvalidation" ]
 
 CMD [ "--help" ]
