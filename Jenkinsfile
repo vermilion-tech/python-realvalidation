@@ -45,22 +45,22 @@ pipeline {
             }
         }
 
-		    // stage('docker build & push') {
-        //     agent { docker { image 'docker:18.09.2' } }
-        //     steps {
-        //         script {
-        //             def branchName = "${GIT_BRANCH}".replace('/', '_')
-        //             def image = docker.build("${DOCKER_REPO}")
-        //
-        //             docker.withRegistry('', "${DOCKER_CREDENTIALS}") {
-        //                 image.push(branchName)
-        //                 image.push("${SEMVER}")
-        //             }
-        //         }
-        //
-        //         slackSend (color: '#0db7ed', message: "Docker Image Built & Pushed - https://hub.docker.com/r/kadenlnelson/realvalidation/tags\n```\nTry it out!\n\ndocker run --rm ${DOCKER_REPO}:${COMMIT_HASH}```")
-        //     }
-        // }
+		    stage('docker build & push') {
+            agent { docker { image 'docker:18.09.2' } }
+            steps {
+                script {
+                    def branchName = "${GIT_BRANCH}".replace('/', '_')
+                    def image = docker.build("${DOCKER_REPO}")
+
+                    docker.withRegistry('', "${DOCKER_CREDENTIALS}") {
+                        image.push(branchName)
+                        image.push("${SEMVER}")
+                    }
+                }
+
+                slackSend (color: '#0db7ed', message: "Docker Image Built & Pushed - https://hub.docker.com/r/kadenlnelson/realvalidation/tags\n```\nTry it out!\n\ndocker run --rm ${DOCKER_REPO}:${SEMVER}```")
+            }
+        }
     }
 
     post {
