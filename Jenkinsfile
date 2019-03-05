@@ -11,6 +11,10 @@ pipeline {
             script: "git describe --always"
         )}"""
 
+        PYTHON_VERSION = '3.7.2'
+
+        PYPIRC_CREDENTIALS = "pypirc-kaden-vt"
+
         DOCKER_REPO = "kadenlnelson/realvalidation"
         DOCKER_CREDENTIALS = "docker-hub-kadenlnelson"
     }
@@ -22,12 +26,21 @@ pipeline {
             }
         }
 
-        stage('Build Python Distributions') {
-            agent { docker { image 'python:3.7.2' } }
+        stage('Build & Push Python Distributions') {
+            agent { docker { image "python:${PYTHON_VERSION}" } }
             steps {
               sh 'pip install -r requirements.txt'
               sh 'python setup.py sdist bdist_wheel'
-              sh 'python setup.py --version'
+              script {
+                SEMVER = """${sh(
+                    returnStdout: true,
+                    script: "python setup.py --version"
+                )}"""
+              }
+              withCredentials([file(credentialsId: "${PYPIRC_CREDENTIALS}", variable: 'PYPIRC')]) {
+                  sh "twine upload --config-file $PYPIRC dist/realvalidation-${SEMVER}*"
+              }
+              slackSend (color: '#ffde57', message: "PyPi Package Pushed - https://pypi.org/project/realvalidation/\n```\nTry it out!\n\npip install realvalidation==${SEMVER}```")
             }
         }
 
