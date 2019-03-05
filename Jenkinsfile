@@ -1,14 +1,10 @@
 pipeline {
-    agent { docker { image 'python:3.7.2' }}
+    agent { docker { image 'python:3.7.2' } }
 
     environment {
         COMMIT_MESSAGE = """${sh(
             returnStdout: true,
             script: "git --no-pager log --format='medium' -1 ${GIT_COMMIT}"
-        )}"""
-        SETUP_PY_VERSION = """${sh(
-            returnStdout: true,
-            script: "python setup.py --version"
         )}"""
 
         DOCKER_REPO = "kadenlnelson/realvalidation"
@@ -19,6 +15,20 @@ pipeline {
         stage('Notify Slack') {
             steps {
                 slackSend(color: '#FFFF00', message: "Build Started - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\n```${env.COMMIT_MESSAGE}```")
+            }
+        }
+
+        stage('install requirements') {
+
+            steps {
+                sh 'pip install -r requirements.txt'
+
+                script {
+                    SETUP_PY_VERSION = """${sh(
+                        returnStdout: true,
+                        script: "python setup.py --version"
+                    )}"""
+                }
             }
         }
 
