@@ -39,13 +39,13 @@ pipeline {
                 )}"""
               }
               withCredentials([file(credentialsId: "${PYPIRC_CREDENTIALS}", variable: 'PYPIRC')]) {
-                  sh "twine upload --skip-existing --config-file $PYPIRC dist/*"
+                  sh 'twine upload --config-file $PYPIRC dist/*'
               }
               slackSend (color: '#ffde57', message: "PyPi Package Pushed - https://pypi.org/project/realvalidation/\n```\nTry it out!\n\npip install realvalidation==${SEMVER}```")
             }
         }
 
-		    stage('docker build & push') {
+		    stage('Build & Push Docker Image') {
             agent { docker { image 'docker:18.09.2' } }
             steps {
                 script {
