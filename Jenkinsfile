@@ -22,7 +22,7 @@ pipeline {
     stages {
         stage('Notify Slack') {
             steps {
-                slackSend(color: '#FFFF00', message: "Build Started - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\n```${env.COMMIT_MESSAGE}```")
+                slackSend(color: '#000000', message: "Build Started - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)\n```${env.COMMIT_MESSAGE}```")
             }
         }
 
@@ -39,7 +39,7 @@ pipeline {
                 )}"""
               }
               withCredentials([file(credentialsId: "${PYPIRC_CREDENTIALS}", variable: 'PYPIRC')]) {
-                  sh "twine upload --disable-progress-bar --skip-existing --config-file $PYPIRC dist/*"
+                  sh "twine upload --skip-existing --config-file $PYPIRC dist/*"
               }
               slackSend (color: '#ffde57', message: "PyPi Package Pushed - https://pypi.org/project/realvalidation/\n```\nTry it out!\n\npip install realvalidation==${SEMVER}```")
             }
@@ -54,7 +54,7 @@ pipeline {
         //
         //             docker.withRegistry('', "${DOCKER_CREDENTIALS}") {
         //                 image.push(branchName)
-        //                 image.push("${COMMIT_HASH}")
+        //                 image.push("${SEMVER}")
         //             }
         //         }
         //
