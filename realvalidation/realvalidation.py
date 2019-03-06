@@ -9,7 +9,6 @@ from .utils import sanitize_phone, is_dnc_json_response_on_dnc
 
 from .errors import (
     InvalidTokenError, InvalidPhoneFormatError, InvalidJSONResponseError,
-    ResponseCodeNotOkError
 )
 
 from .constants import PROD_DNC_URL, MOCK_DNC_URL
@@ -129,10 +128,6 @@ class RealValidation:
             data = req.json()
         except ValueError:
             raise InvalidJSONResponseError
-
-        # if realvalidation RESPONSECODE isn't OK raise error
-        if data.get('RESPONSECODE') != 'OK':
-            raise ResponseCodeNotOkError
 
         return data
 

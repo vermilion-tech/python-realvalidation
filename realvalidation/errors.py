@@ -33,3 +33,15 @@ class ResponseCodeNotOkError(RealValidationError):
 
     """
     pass
+
+
+class MissingPhoneNumberError(ResponseCodeNotOkError):
+    pass
+
+
+class InvalidCustomerError(ResponseCodeNotOkError):
+    pass
+
+
+class InsufficientBalanceError(ResponseCodeNotOkError):
+    pass

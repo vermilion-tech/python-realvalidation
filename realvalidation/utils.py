@@ -2,6 +2,11 @@ from openpyxl import Workbook as OpenPyxlWorkbook
 
 from .constants import PHONE_COLUMN_REGEX, PHONE_DIGIT_REGEX
 
+from .errors import (
+    ResponseCodeNotOkError, MissingPhoneNumberError, InsufficientBalanceError,
+    InvalidCustomerError
+)
+
 import logging
 import os
 import re
@@ -25,8 +30,23 @@ def is_dnc_json_response_on_dnc(response):
     """
     on_dnc = False
 
-    # TODO: Better Error Handling
-    if response.get('RESPONSEMSG') != '':
+    # put response code/msg into variables
+    response_code = data.get('RESPONSECODE')
+    response_msg = data.get('RESPONSEMSG')
+
+    # raise for status
+    try:
+        if response_code != 'OK' or response_msg != '':
+            if response_code == '-1' and response_msg == 'Missing Phone Number':
+                raise MissingPhoneNumberError
+            else if response_code == '102' and 'Invalid Customer' in response_msg:
+                raise InvalidCustomerError
+            else if response_code == '102' and 'Insufficient Balance' in response_msg:
+                raise InsufficientBalanceError
+            else:
+                raise ResponseCodeNotOkError
+    except Exception as error:
+        log.error(error)
         on_dnc = True
 
     if response.get('national_dnc') != 'N':
