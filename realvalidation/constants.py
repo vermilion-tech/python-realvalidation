@@ -1,6 +1,6 @@
-from pbr.version import VersionInfo
+from setuptools_scm import get_version
 
-VERSION = VersionInfo('realvalidation').semantic_version().release_string()
+VERSION = get_version(root='..', relative_to=__file__)
 DESCRIPTION = "RealValidation v{}".format(VERSION)
 
 MOCK_DNC_URL = 'https://realvalidation-dnc-mock.herokuapp.com/validate'

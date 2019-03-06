@@ -39,9 +39,9 @@ def is_dnc_json_response_on_dnc(response):
         if response_code != 'OK' or response_msg != '':
             if response_code == '-1' and response_msg == 'Missing Phone Number':
                 raise MissingPhoneNumberError
-            else if response_code == '102' and 'Invalid Customer' in response_msg:
+            elif response_code == '102' and 'Invalid Customer' in response_msg:
                 raise InvalidCustomerError
-            else if response_code == '102' and 'Insufficient Balance' in response_msg:
+            elif response_code == '102' and 'Insufficient Balance' in response_msg:
                 raise InsufficientBalanceError
             else:
                 raise ResponseCodeNotOkError
