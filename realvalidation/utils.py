@@ -4,7 +4,7 @@ from .constants import PHONE_COLUMN_REGEX, PHONE_DIGIT_REGEX
 
 from .errors import (
     ResponseCodeNotOkError, MissingPhoneNumberError, InsufficientBalanceError,
-    InvalidCustomerError
+    InvalidCustomerError, InvalidPhoneFormatError
 )
 
 import logging
@@ -31,23 +31,11 @@ def is_dnc_json_response_on_dnc(response):
     on_dnc = False
 
     # put response code/msg into variables
-    response_code = data.get('RESPONSECODE')
-    response_msg = data.get('RESPONSEMSG')
+    response_code = response.get('RESPONSECODE')
+    response_msg = response.get('RESPONSEMSG')
 
     # raise for status
-    try:
-        if response_code != 'OK' or response_msg != '':
-            if response_code == '-1' and response_msg == 'Missing Phone Number':
-                raise MissingPhoneNumberError
-            elif response_code == '102' and 'Invalid Customer' in response_msg:
-                raise InvalidCustomerError
-            elif response_code == '102' and 'Insufficient Balance' in response_msg:
-                raise InsufficientBalanceError
-            else:
-                raise ResponseCodeNotOkError
-    except Exception as error:
-        log.error(error)
-        on_dnc = True
+    response_raise_for_status(response_code, response_msg)
 
     if response.get('national_dnc') != 'N':
         on_dnc = True
@@ -64,6 +52,35 @@ def is_dnc_json_response_on_dnc(response):
     log.debug('is_dnc_json_on_dnc: {} {}'.format(on_dnc, response))
 
     return on_dnc
+
+
+def response_raise_for_status(response_code, response_msg):
+    # raise for status
+    if response_code != 'OK' or response_msg != '':
+        # missing phone number in request
+        if (
+            response_code == '-1'
+            and response_msg == 'Missing Phone Number'
+        ):
+            raise MissingPhoneNumberError
+
+        # customer not authorized to use api
+        elif (
+            response_code == '102'
+            and 'Invalid Customer' in response_msg
+        ):
+            raise InvalidCustomerError
+
+        # insufficient balance in account
+        elif (
+            response_code == '102'
+            and 'Insufficient Balance' in response_msg
+        ):
+            raise InsufficientBalanceError
+
+        # unknown error
+        else:
+            raise ResponseCodeNotOkError
 
 
 def write_rows_to_workbook(rows, workbook_path, workbook_name):
@@ -177,3 +194,28 @@ def enumerate_phone_column_index_from_row(row):
             break
 
     return phone_column_index
+
+
+def verify_phone_format(phone):
+    """Verifies a phone using PHONE_REGEX
+
+    Parameters
+    ----------
+    phone : str
+        Phone to be verified.
+
+    Returns
+    -------
+    bool
+        True if successful, otherwise method raises exception (see below)
+
+    Raises
+    ------
+    InvalidPhoneFormatException
+        If the phone couldn't be verified using PHONE_REGEX
+
+    """
+    if re.match(PHONE_DIGIT_REGEX, phone):
+        return True
+
+    raise InvalidPhoneFormatError

@@ -2,7 +2,9 @@ from openpyxl import load_workbook
 import logging
 import itertools
 
-from .utils import enumerate_phone_column_index_from_row, get_cell_values_from_row
+from .utils import (
+    enumerate_phone_column_index_from_row, get_cell_values_from_row
+)
 
 log = logging.getLogger(__name__)
 

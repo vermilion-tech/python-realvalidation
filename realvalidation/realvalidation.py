@@ -1,14 +1,13 @@
 import requests
 import logging
-import re
 import os
 
 from .workbook import Workbook
 
-from .utils import sanitize_phone, is_dnc_json_response_on_dnc
+from .utils import sanitize_phone, verify_phone_format
 
 from .errors import (
-    InvalidTokenError, InvalidPhoneFormatError, InvalidJSONResponseError,
+    InvalidTokenError, InvalidJSONResponseError, InvalidPhoneFormatError
 )
 
 from .constants import PROD_DNC_URL, MOCK_DNC_URL
@@ -34,61 +33,33 @@ class RealValidation:
     phone_regex : str
         Regex to use when validating phone numbers. Defaults to ``r'^\d{10}$'``
     staging: bool
-        If ``True`` RealValidation utilizes the Mock API, overrides ``url`` parameter
+        If ``True`` RealValidation utilizes the Mock API, overrides ``url``
+        parameter
 
     """
-    DEFAULT_OUTPUT = 'json'
-    DEFAULT_URL = PROD_DNC_URL
 
-    PHONE_REGEX = r'^\d{10}$'  # 10 numeric digits only
-
-    def _verify_phone(self, phone):
-        """Verifies a phone using PHONE_REGEX
-
-        Parameters
-        ----------
-        phone : str
-            Phone to be verified.
-
-        Returns
-        -------
-        bool
-            True if successful, otherwise method raises exception (see below)
-
-        Raises
-        ------
-        InvalidPhoneFormatException
-            If the phone couldn't be verified using PHONE_REGEX
-
-        """
-        if re.match(self.phone_regex, phone):
-            return True
-
-        raise InvalidPhoneFormatError
+    workbooks = []
 
     def __init__(self,
-                 workbooks=None,
+                 url=PROD_DNC_URL,
                  token=os.environ.get('RV_TOKEN'),
-                 output=DEFAULT_OUTPUT,
-                 url=DEFAULT_URL,
-                 phone_regex=PHONE_REGEX,
+                 output='json',
                  staging=False):
 
         if token is None:
             raise InvalidTokenError
 
-        if workbooks is not None:
-            self.workbooks = [Workbook(workbook) for workbook in workbooks]
-
-        self.output = output
-        self.token = token
-        self.phone_regex = phone_regex
-
         self.url = url
+        self.token = token
+        self.output = output
+
         if staging:
             self.url = MOCK_DNC_URL
 
         log.debug('<RealValidation {} >'.format(self.__dict__))
+
+    def add_workbook(self, workbook_path):
+        self.workbooks.append(Workbook(workbook_path))
 
     def lookup_phone(self, phone):
         """Makes a request to the RealValidation DNC API
@@ -104,9 +75,11 @@ class RealValidation:
             Dictionary representing JSON response from RealValidation DNC API.
 
         """
+        # remove any non-numerical characters from string
         sanitized_phone = sanitize_phone(phone)
 
-        self._verify_phone(sanitized_phone)
+        # verify phone matches format regex
+        verify_phone_format(sanitized_phone)
 
         # assemble our request payload
         payload = dict(
@@ -122,8 +95,7 @@ class RealValidation:
         if req.status_code != requests.codes.ok:
             req.raise_for_status()
 
-        # attempt to decode json from response
-        # if we can't, raise error
+        # attempt to decode json from response, if we can't, raise error
         try:
             data = req.json()
         except ValueError:
@@ -136,13 +108,14 @@ class RealValidation:
 
         Returns
         -------
-        dict
-            Dictionary with values of ``valid`` and ``invalid`` rows
+        list
+            List of dicts that contain keys ``row`` and ```response``,
+            corresponding to the row of the phone number validated against the
+            DNC API and the response back from the DNC API
 
         """
 
-        valid_rows = []
-        invalid_rows = []
+        rows_and_responses = []
 
         # for every one of our sheets in `self.workbooks`
         for workbook in self.workbooks:
@@ -153,40 +126,22 @@ class RealValidation:
                 for row in sheet.get_row_values():
 
                     if row and row is not None:
-                        on_dnc = self.lookup_phone_from_row(row, phone_column_index)
+                        # get phone from row at phone_column_index
+                        phone = row[phone_column_index]
 
-                        # append to respective array if valid/invalid
-                        if on_dnc:
-                            invalid_rows.append(row)
-                        else:
-                            valid_rows.append(row)
+                        # lookup phone
+                        try:
+                            response = self.lookup_phone(phone)
+                        except InvalidPhoneFormatError:
+                            response = None
 
-        return dict(valid=valid_rows, invalid=invalid_rows)
+                        # assemble row and response into dict
+                        row_and_response = dict(
+                            response=response,
+                            row=row
+                        )
 
-    def lookup_phone_from_row(self, row, phone_column_index):
-        """Lookup phone from row at index
+                        # append row and responses
+                        rows_and_responses.append(row_and_response)
 
-        Parameters
-        ----------
-        row : list
-            List of strings containing phone
-
-        phone_column_index : int
-            Index/Position of phone in row list
-
-        Returns
-        -------
-        bool
-            True/False value whether phone is on dnc or not
-
-        """
-        phone = row[phone_column_index]
-
-        try:
-            response = self.lookup_phone(phone)
-            on_dnc = is_dnc_json_response_on_dnc(response)
-
-            return on_dnc
-
-        except InvalidPhoneFormatError:
-            log.error('InvalidPhoneFormatError phone: "{}"'.format(phone))
+        return rows_and_responses
