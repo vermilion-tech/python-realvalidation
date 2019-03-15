@@ -45,3 +45,7 @@ class InvalidCustomerError(ResponseCodeNotOkError):
 
 class InsufficientBalanceError(ResponseCodeNotOkError):
     pass
+
+
+class InvalidPhoneError(ResponseCodeNotOkError):
+    pass

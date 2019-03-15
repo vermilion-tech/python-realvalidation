@@ -4,7 +4,7 @@ from .constants import PHONE_COLUMN_REGEX, PHONE_DIGIT_REGEX
 
 from .errors import (
     ResponseCodeNotOkError, MissingPhoneNumberError, InsufficientBalanceError,
-    InvalidCustomerError, InvalidPhoneFormatError
+    InvalidCustomerError, InvalidPhoneFormatError, InvalidPhoneError
 )
 
 import logging
@@ -77,6 +77,13 @@ def response_raise_for_status(response_code, response_msg):
             and 'Insufficient Balance' in response_msg
         ):
             raise InsufficientBalanceError
+
+        # invalid phone
+        elif (
+            response_code == 'invalid-phone'
+            and response_msg == 'Phone Number does not exist'
+        ):
+            raise InvalidPhoneError
 
         # unknown error
         else:

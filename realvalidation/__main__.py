@@ -42,6 +42,8 @@ def main():
                     dnc_rows.append(row)
                 else:
                     valid_rows.append(row)
+            # TODO: maybe we could add error data to row array, that way when
+            # we view the error sheet, we can determine which error triggered
             except ResponseCodeNotOkError:
                 error_rows.append(row)
         else:

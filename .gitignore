@@ -17,3 +17,5 @@ doc/_*
 *.xlsx
 
 *.log
+
+*.pyc
