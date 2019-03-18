@@ -1,6 +1,13 @@
-from setuptools_scm import get_version
+from pkg_resources import get_distribution, DistributionNotFound
 
-VERSION = get_version(root='..', relative_to=__file__)
+VERSION = None
+
+try:
+    VERSION = get_distribution(__name__).version
+except DistributionNotFound:
+    # package is not installed
+    VERSION = "ERROR"
+
 DESCRIPTION = "RealValidation v{}".format(VERSION)
 
 MOCK_DNC_URL = 'https://realvalidation-dnc-mock.herokuapp.com/validate'
