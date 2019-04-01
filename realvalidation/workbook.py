@@ -49,7 +49,7 @@ class Sheet:
 class Workbook:
     def __init__(self, workbook_file_path):
         self.workbook = load_workbook(workbook_file_path,
-                                      read_only=True)
+                                      read_only=False)
 
         # reset dimensions hotfix
         for sheet in self.workbook:
