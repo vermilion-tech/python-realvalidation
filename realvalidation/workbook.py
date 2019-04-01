@@ -51,6 +51,10 @@ class Workbook:
         self.workbook = load_workbook(workbook_file_path,
                                       read_only=True)
 
+        # reset dimensions hotfix
+        for sheet in self.workbook:
+            sheet.reset_dimensions()
+
         self.sheets = [Sheet(sheet) for sheet in self.workbook]
 
         log.debug(self.__dict__)
